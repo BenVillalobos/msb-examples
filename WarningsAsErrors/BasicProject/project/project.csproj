@@ -1,0 +1,83 @@
+<Project>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <MSBuildWarningsAsErrors>MyWarning1234;MSB1234</MSBuildWarningsAsErrors>
+  </PropertyGroup>
+
+  <UsingTask TaskName="task.MyTask" AssemblyFile="$(MSBuildThisFileDirectory)..\task\bin\Debug\net472\task.dll" />
+  <UsingTask TaskName="task.MyITask" AssemblyFile="$(MSBuildThisFileDirectory)..\task\bin\Debug\net472\task.dll" />
+  <UsingTask TaskName="task.CustomLogAndReturnTask" AssemblyFile="$(MSBuildThisFileDirectory)..\task\bin\Debug\net472\task.dll" />
+
+  <!-- Expected Result: Build finishes but fails. -->
+  <!-- We SHOULD see MSB0000, meaning the build continued after the first task logged an error. -->
+  <Target Name="TaskReturnsTrue_LogsError">
+    <CustomLogAndReturnTask Return="true" ErrorCode="MSB4321"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Result: Build finishes but fails. -->
+  <!-- We SHOULD see MSB0000, meaning the build continued after the first task logged an error. -->
+  <Target Name="TaskReturnsTrue_LogsWarningAsError">
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB1234"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Result: Build STOPS but fails. -->
+  <!-- We should NOT see MSB0000.-->
+  <!-- Slightly unexpected Result: Build continues but fails. -->
+  <!-- Will be fixed by hasloggederror PR. -->
+  <Target Name="TaskReturnsHasLoggedErrors_LogsError">
+    <CustomLogAndReturnTask Return="true" ReturnHasLoggedErrors="true" ErrorCode="MSB1235"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Result: Build STOPS but fails. -->
+  <!-- We should NOT see MSB0000.-->
+  <!-- Unexpected result as of 16.10: We see the error code, we also see MSB4181 -->
+  <Target Name="TaskReturnsHasLoggedErrors_LogsWarningAsError">
+    <CustomLogAndReturnTask Return="true" ReturnHasLoggedErrors="true" WarningCode="MSB1234"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Result: Build STOPS but fails. -->
+  <!-- Should see: warning MSB1234 and error 4181 -->
+  <!-- Should NOT see: warning MSB0000 -->
+  <Target Name="TaskReturnsFalse_LogsWarning">
+    <CustomLogAndReturnTask Return="false" WarningCode="MSB1111"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Result: Build STOPS but fails. -->
+  <!-- Should see: error MSB1235 -->
+  <!-- Should NOT see: warning MSB0000 and error 4181 -->
+  <Target Name="TaskReturnsFalse_LogsError">
+    <CustomLogAndReturnTask Return="false" ErrorCode="MSB1235"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+
+  <Target Name="TaskOuterTarget"
+          DependsOnTargets="TaskInnerTarget">
+    <Message Importance="High" Text="Post TaskInnerTarget" />
+  </Target>
+
+  <Target Name="TaskInnerTarget">
+  <Message Importance="High" Text="Pre MyTask"/>
+    <MyTask />
+    <Message Importance="High" Text="Post MyTask"/>
+  </Target>
+
+  <Target Name="ITaskOuterTarget"
+    DependsOnTargets="ITaskInnerTarget">
+    <Message Importance="High" Text="Post MyTargetInner" />
+  </Target>
+
+  <Target Name="ITaskInnerTarget">
+    <Message Importance="High" Text="Pre MyITask"/>
+    <MyITask />
+    <Message Importance="High" Text="Post MyITask"/>
+  </Target>
+
+</Project>
