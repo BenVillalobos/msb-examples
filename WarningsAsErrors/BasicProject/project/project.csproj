@@ -10,48 +10,89 @@
   <UsingTask TaskName="task.MyITask" AssemblyFile="$(MSBuildThisFileDirectory)..\task\bin\Debug\net472\task.dll" />
   <UsingTask TaskName="task.CustomLogAndReturnTask" AssemblyFile="$(MSBuildThisFileDirectory)..\task\bin\Debug\net472\task.dll" />
 
-  <!-- Expected Result: Build finishes but fails. -->
-  <!-- We SHOULD see MSB0000, meaning the build continued after the first task logged an error. -->
+  <!-- Expected Results -->
+  <!-- Task Returns: true -->
+  <!-- Logs: Error -->
+  <!-- Build: Continues -->
+  <!-- Result: Fail -->
+  <!-- Should see: MSB4321;MSB0000 -->
   <Target Name="TaskReturnsTrue_LogsError">
     <CustomLogAndReturnTask Return="true" ErrorCode="MSB4321"/>
     <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
   </Target>
 
-  <!-- Expected Result: Build finishes but fails. -->
-  <!-- We SHOULD see MSB0000, meaning the build continued after the first task logged an error. -->
+  <!-- Expected Results -->
+  <!-- Task Returns: true -->
+  <!-- Logs: Warning as Error -->
+  <!-- Build: Continues -->
+  <!-- Result: Fail -->
+  <!-- Should see: MSB4321;MSB0000 -->
   <Target Name="TaskReturnsTrue_LogsWarningAsError">
     <CustomLogAndReturnTask Return="true" WarningCode="MSB1234"/>
     <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
   </Target>
 
-  <!-- Expected Result: Build STOPS but fails. -->
-  <!-- We should NOT see MSB0000.-->
-  <!-- Slightly unexpected Result: Build continues but fails. -->
-  <!-- Will be fixed by hasloggederror PR. -->
+  <!-- Expected Results -->
+  <!-- Task Returns: true -->
+  <!-- Logs: Warning -->
+  <!-- Build: Continues -->
+  <!-- Result: Success -->
+  <!-- Should see: MSB1235;MSB0000 -->
+  <Target Name="TaskReturnsTrue_LogsWarning">
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB1235"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Results -->
+  <!-- Task Returns: !Log.HasLoggedErrors -->
+  <!-- Logs: Error -->
+  <!-- Build: Stop -->
+  <!-- Result: Fail -->
+  <!-- Should see: MSB1235 -->
   <Target Name="TaskReturnsHasLoggedErrors_LogsError">
     <CustomLogAndReturnTask Return="true" ReturnHasLoggedErrors="true" ErrorCode="MSB1235"/>
     <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
   </Target>
 
-  <!-- Expected Result: Build STOPS but fails. -->
-  <!-- We should NOT see MSB0000.-->
-  <!-- Unexpected result as of 16.10: We see the error code, we also see MSB4181 -->
+  <!-- Expected Results -->
+  <!-- Task Returns: !Log.HasLoggedErrors -->
+  <!-- Logs: Warning as Error -->
+  <!-- Build: Continue (pre-warnaserr-fix. stop after) -->
+  <!-- Result: Fail -->
+  <!-- Should see: MSB1234;MSB0000 -->
   <Target Name="TaskReturnsHasLoggedErrors_LogsWarningAsError">
     <CustomLogAndReturnTask Return="true" ReturnHasLoggedErrors="true" WarningCode="MSB1234"/>
     <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
   </Target>
 
-  <!-- Expected Result: Build STOPS but fails. -->
-  <!-- Should see: warning MSB1234 and error 4181 -->
-  <!-- Should NOT see: warning MSB0000 -->
+  <!-- Expected Results -->
+  <!-- Task Returns: !Log.HasLoggedErrors -->
+  <!-- Logs: Warning -->
+  <!-- Build: Continue -->
+  <!-- Result: Success -->
+  <!-- Should see: MSB1234;MSB0000 -->
+  <Target Name="TaskReturnsHasLoggedErrors_LogsWarning">
+    <CustomLogAndReturnTask Return="true" ReturnHasLoggedErrors="true" WarningCode="MSB1235"/>
+    <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
+  </Target>
+
+  <!-- Expected Results -->
+  <!-- Task Returns: false -->
+  <!-- Logs: Warning -->
+  <!-- Build: Stops -->
+  <!-- Result: Fail -->
+  <!-- Should see: MSB1111;MSB4181 (return false but didn't log error) -->
   <Target Name="TaskReturnsFalse_LogsWarning">
     <CustomLogAndReturnTask Return="false" WarningCode="MSB1111"/>
     <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>
   </Target>
 
-  <!-- Expected Result: Build STOPS but fails. -->
-  <!-- Should see: error MSB1235 -->
-  <!-- Should NOT see: warning MSB0000 and error 4181 -->
+  <!-- Expected Results -->
+  <!-- Task Returns: false -->
+  <!-- Logs: Error -->
+  <!-- Build: Stops -->
+  <!-- Result: Fail -->
+  <!-- Should see: MSB1235 -->
   <Target Name="TaskReturnsFalse_LogsError">
     <CustomLogAndReturnTask Return="false" ErrorCode="MSB1235"/>
     <CustomLogAndReturnTask Return="true" WarningCode="MSB0000"/>

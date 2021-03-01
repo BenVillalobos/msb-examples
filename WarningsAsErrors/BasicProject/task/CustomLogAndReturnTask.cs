@@ -32,7 +32,7 @@ namespace task
                 Log.LogError(null, ErrorCode, null, null, 0, 0, 0, 0, "Error Logged!", null);
             }
 
-            return ReturnHasLoggedErrors ? Log.HasLoggedErrors : Return;
+            return ReturnHasLoggedErrors ? !Log.HasLoggedErrors : Return;
         }
     }
 }
