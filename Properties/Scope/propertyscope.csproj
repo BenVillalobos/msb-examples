@@ -1,0 +1,32 @@
+<Project sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <OutputType>Exe</OutputType>
+      <TargetFramework>net472</TargetFramework>
+      <A>CreatedOutsideOfTargets</A>
+    </PropertyGroup>
+    
+    <!-- We can see by running this project that properties modified within targets are not local. -->
+    <Target Name="FirstTarget" BeforeTargets="Build">
+        <Message Text="Value of property A in FirstTarget: $(A)" Importance="High"/>
+        <PropertyGroup>
+            <A>ModifiedInFirstTarget</A>
+            <B>CreatedInFirstTarget</B>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="SecondTarget" AfterTargets="FirstTarget">
+        <Message Text="Value of property A in SecondTarget: $(A)" Importance="High"/>
+        <Message Text="Value of property B in SecondTarget: $(B)" Importance="High"/>
+        <PropertyGroup>
+            <B>ModifiedInSecondTarget</B>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="ThirdTarget" AfterTargets="SecondTarget">
+        <Message Text="Value of property A in ThirdTarget: $(A)" Importance="High"/>
+        <Message Text="Value of property B in ThirdTarget: $(B)" Importance="High"/>
+    </Target>
+    
+  </Project>
+  
