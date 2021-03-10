@@ -1,0 +1,34 @@
+<!-- 
+SET MSBUILDFORCEALLTASKSOUTOFPROC=1
+D:\msbuild\artifacts\bin\bootstrap\net472\MSBuild\Current\Bin\MSBuild.exe /m /nr:false D:\Stuff\task-hasloggederrors.proj
+SET MSBUILDFORCEALLTASKSOUTOFPROC=
+ -->
+<Project>
+    <PropertyGroup>
+      <MSBuildWarningsAsErrors>123</MSBuildWarningsAsErrors>
+    </PropertyGroup>
+    <Target Name="Build">
+      <Foo />
+      <Foo2 />
+    </Target>
+    <UsingTask TaskName="Foo" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildBinPath)\Microsoft.Build.Tasks.Core.dll">
+      <Task>
+        <Code Type="Fragment" Language="C#">
+          <![CDATA[
+  Log.LogWarning(null, "123", null, null, 0, 0, 0, 0, "You have been warned");
+  Log.LogMessageFromText($"HasLoggedErrors: {Log.HasLoggedErrors}", MessageImportance.High);
+          ]]>
+        </Code>
+      </Task>
+    </UsingTask>
+    <UsingTask TaskName="Foo2" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildBinPath)\Microsoft.Build.Tasks.Core.dll">
+      <Task>
+        <Code Type="Fragment" Language="C#">
+          <![CDATA[
+  Log.LogWarning(null, "456", null, null, 0, 0, 0, 0, "You have been warned");
+  Log.LogMessageFromText($"HasLoggedErrors: {Log.HasLoggedErrors}", MessageImportance.High);
+          ]]>
+        </Code>
+      </Task>
+    </UsingTask>
+  </Project>
